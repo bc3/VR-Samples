@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Starry Sky VR</title>
+    <!-- A-Frame Library -->
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+</head>
+<body>
+    <a-scene>
+        <!-- Starry Sky -->
+        <a-sky color="black"></a-sky>
+
+        <!-- Generate animated stars using JavaScript -->
+        <script>
+            const scene = document.querySelector("a-scene");
+
+            // Create 500 animated stars
+            for (let i = 0; i < 500; i++) {
+                const star = document.createElement('a-sphere');
+
+                // Randomize star positions
+                const x = (Math.random() - 0.5) * 100; // Random between -50 and 50
+                const y = (Math.random() - 0.5) * 100; // Random between -50 and 50
+                const z = (Math.random() - 0.5) * 100; // Random between -50 and 50
+
+                // Set star properties
+                star.setAttribute('position', `${x} ${y} ${z}`);
+                star.setAttribute('radius', 0.2); // Small size for stars
+                star.setAttribute('color', 'white'); // White stars
+                star.setAttribute('opacity', Math.random()); // Random brightness
+                star.setAttribute('transparent', true);
+
+                // Animate the star
+                const duration = 5000 + Math.random() * 5000; // Random duration between 5s and 10s
+                star.setAttribute('animation', `
+                    property: position;
+                    to: ${(Math.random() - 0.5) * 100} ${(Math.random() - 0.5) * 100} ${(Math.random() - 0.5) * 100};
+                    dur: ${duration};
+                    loop: true;
+                    easing: linear;
+                `);
+
+                // Add the star to the scene
+                scene.appendChild(star);
+            }
+        </script>
+    </a-scene>
+</body>
+</html>
