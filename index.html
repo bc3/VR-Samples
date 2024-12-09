@@ -3,49 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Starry Sky VR</title>
-    <!-- A-Frame Library -->
+    <title>VR Rock Shooter Game</title>
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
 </head>
 <body>
     <a-scene>
-        <!-- Starry Sky -->
+        <!-- Sky -->
         <a-sky color="black"></a-sky>
 
-        <!-- Generate animated stars using JavaScript -->
+        <!-- Player Camera -->
+        <a-entity id="camera" camera look-controls>
+            <!-- Crosshair -->
+            <a-entity
+                position="0 0 -1"
+                geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                material="color: white; shader: flat">
+            </a-entity>
+        </a-entity>
+
+        <!-- Timer Text -->
+        <a-text
+            id="timer"
+            value="Time: 60"
+            position="0 2 -3"
+            align="center"
+            color="white">
+        </a-text>
+
+        <!-- Rocks -->
         <script>
-            const scene = document.querySelector("a-scene");
+            const scene = document.querySelector('a-scene');
+            const timerText = document.querySelector('#timer');
+            const totalTime = 60; // 1 minute
+            let timeLeft = totalTime;
+            let score = 0;
 
-            // Create 500 animated stars
-            for (let i = 0; i < 500; i++) {
-                const star = document.createElement('a-sphere');
+            // Function to create a rock
+            function createRock() {
+                const rock = document.createElement('a-sphere');
+                rock.setAttribute('radius', 0.5);
+                rock.setAttribute('color', 'gray');
 
-                // Randomize star positions
-                const x = (Math.random() - 0.5) * 100; // Random between -50 and 50
-                const y = (Math.random() - 0.5) * 100; // Random between -50 and 50
-                const z = (Math.random() - 0.5) * 100; // Random between -50 and 50
+                // Random position within a 10x10x10 area
+                const x = (Math.random() - 0.5) * 10;
+                const y = (Math.random() - 0.5) * 5 + 2; // Keep rocks a bit higher
+                const z = (Math.random() - 0.5) * -10 - 5; // Always in front of the player
 
-                // Set star properties
-                star.setAttribute('position', `${x} ${y} ${z}`);
-                star.setAttribute('radius', 0.2); // Small size for stars
-                star.setAttribute('color', 'white'); // White stars
-                star.setAttribute('opacity', Math.random()); // Random brightness
-                star.setAttribute('transparent', true);
+                rock.setAttribute('position', `${x} ${y} ${z}`);
+                rock.setAttribute('class', 'rock');
 
-                // Animate the star
-                const duration = 5000 + Math.random() * 5000; // Random duration between 5s and 10s
-                star.setAttribute('animation', `
+                // Animate the rock to move forward
+                rock.setAttribute('animation', `
                     property: position;
-                    to: ${(Math.random() - 0.5) * 100} ${(Math.random() - 0.5) * 100} ${(Math.random() - 0.5) * 100};
-                    dur: ${duration};
-                    loop: true;
+                    to: ${x} ${y} 10;
+                    dur: ${5000 + Math.random() * 5000};
                     easing: linear;
                 `);
 
-                // Add the star to the scene
-                scene.appendChild(star);
+                // Remove the rock when it finishes its animation
+                rock.addEventListener('animationcomplete', () => {
+                    scene.removeChild(rock);
+                    createRock(); // Respawn the rock
+                });
+
+                // Add click event to "shoot" the rock
+                rock.addEventListener('click', () => {
+                    scene.removeChild(rock); // Remove the rock
+                    createRock(); // Respawn the rock
+                    score++; // Increase score
+                    playSound('shoot'); // Play shooting sound
+                });
+
+                scene.appendChild(rock);
+            }
+
+            // Spawn initial 10 rocks
+            for (let i = 0; i < 10; i++) {
+                createRock();
+            }
+
+            // Countdown Timer
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                timerText.setAttribute('value', `Time: ${timeLeft}`);
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
+
+            // End game
+            function endGame() {
+                alert(`Game Over! Your score: ${score}`);
+                location.reload(); // Reload the game
+            }
+
+            // Add sounds
+            function playSound(id) {
+                const sound = document.createElement('a-sound');
+                sound.setAttribute('src', `#${id}`);
+                sound.setAttribute('autoplay', 'true');
+                scene.appendChild(sound);
             }
         </script>
+
+        <!-- Sound Assets -->
+        <a-assets>
+            <audio id="shoot" src="https://cdn.pixabay.com/download/audio/2022/08/23/audio_ee91e24b77.mp3"></audio>
+        </a-assets>
     </a-scene>
 </body>
 </html>
